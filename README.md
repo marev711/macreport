@@ -37,11 +37,6 @@
 
   <p align="center">
     Collection of script to run of a Raspberry Pi to monitor and visualize MAC addresses connected to your local network
-    <br />
-    <a href="https://github.com/marev711/macreport"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/marev711/macreport">View Demo</a>
   </p>
 </p>
 
@@ -73,7 +68,7 @@ Macreport is a collection of scripts intended to run on a Raspberry Pi connected
  The main purpose of the project is to illustrate, given that you have access to the hardware, how easy such monitoring is to setup, and that the course material in CS50 is more than enough to do so.
 
 
-### Prerequisites
+## Prerequisites
 
 Below are the required software and how to install it. NB: If you have multiple projects on your Pi and run into dependency issues, you might want to use `pip` and a dedicated Python virtualenv for your setup.
 * Raspberry Pi with Raspbian OS and WiFi card
@@ -125,14 +120,44 @@ Below are the required software and how to install it. NB: If you have multiple 
 
 
 ## Use Cases
+Three use cases exist, two views from the Flask server and one use case when sending a push notice.
 ### Flask text view
+The flask server will in the text view fetch and bin the 5-minute interval in the database into the configured time span, default 30 minutes, and display them as a simple list. This binning is made to handle the fact that not all devices will reply to every call to `nmap`, but during a 30 minute sequence it is reasonable they will reply at least once. See
 
+![alt text](https://github.com/marev711/macreport/blob/master/images/macreport-text-view.png?raw=true)
 
+The image contain real data but names have been temporarily anonymized for the image. Short links `12h`, `24h`, etc.. can be used to filter how many hours from the start date to display. These links also adds a query variable `date=YYYYmmddHHMM` to the url which can be edited manually to display any date from the database. The text view is mainly intended for debugging.
+
+### Flask svg view
+The flask server will in the svg view fetch and bin the 5-minute intervals in the database into the configured time span, then write an SVG overview image for each month in the database. As above, the binning is made to handle the fact that not all devices will reply to every call to `nmap`, but during a 30 minute sequence it is reasonable they will reply at least once. See,
+
+![alt text](https://github.com/marev711/macreport/blob/master/images/macreport-svg-view.png?raw=true)
+
+Only the current month is regenerated unless the "Regenerate all images" is requested, other months are cached and reused. Color legend for this view is:
+
+* green: device was detected at least once during the bin interval
+* gray: device was not detected during the bin interval
+* white: future (not yet in database)
+* bold blue: Mondays
+
+Note the intermittent gray boxes for PersonD the 27:th and 28:th is an iPhone that was present but did not reply to `nmap` during this time interval.
+
+### Pushover notice
+The pushover script is run separately and will read the database and when a known MAC-address reconnects, send a push notice to via the [Pushover][pushover-url]-service. For an example of the push notice received, see,
+
+![alt text](https://github.com/marev711/macreport/blob/master/images/macreport-pushover-notice.png?raw=true)
+
+The criterias for sending the push notice are,
+* Push notices are not sent prior to a configurable time, e.g., 13:00 hours
+* The MAC-address has to be absent at least a configurable amount of time, e.g., 4 hours
+
+The main purpose of the script is to check whether family members have returned home in the afternoon.
 
 ## Roadmap
 Desired features in near term are:
 * Add an audio queue to a speaker connected to the Raspberry Pi when a known MAC address reconnects to the WiFi network. This should visualize ("audiolize") the ongoing monitoring and remind the persons monitored that digital monitoring is ubiquitous in their everyday life.
 * Improve robustness for detecting devices connected to the WiFi network. The current `nmap` probe solution does not always work, e.g., an iPhone in sleep mode or with locked screen does not always reply.
+* Add entry to select starting date in the text view use case.
 
 
 ## Contributing
@@ -151,23 +176,20 @@ Send a PM to `d9023q4ladl` on [Reddit](https://reddit.com)
 ## Acknowledgements
 
 * This README adapted from: [Best README Template by Othneil Drew](https://github.com/othneildrew/Best-README-Template)
-* Flask CSS adapted from: [Official documentation example]](https://flask.palletsprojects.com/en/1.1.x/tutorial/static/)
+* Flask CSS adapted from: [Official documentation example](https://flask.palletsprojects.com/en/1.1.x/tutorial/static/)
+* Surveillance camera logotype from [Pixabay](https://pixabay.com)
 * Various examples and assignments from the CS50 course have been reused.
 
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/marev711/repo.svg?style=for-the-badge
-[contributors-url]: https://github.com/marev711/repo/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/marev711/repo.svg?style=for-the-badge
-[forks-url]: https://github.com/marev711/repo/network/members
 [stars-shield]: https://img.shields.io/github/stars/marev711/repo.svg?style=for-the-badge
-[stars-url]: https://github.com/marev711/repo/stargazers
-[issues-shield]: https://img.shields.io/github/issues/marev711/repo.svg?style=for-the-badge
-[issues-url]: https://github.com/marev711/repo/issues
-[license-shield]: https://img.shields.io/github/license/marev711/repo.svg?style=for-the-badge
-[license-url]: https://github.com/marev711/repo/blob/master/LICENSE.txt
+[stars-url]: https://github.com/marev711/macreport/stargazers
+[issues-shield]: https://img.shields.io/github/issues/marev711/macreport.svg?style=for-the-badge
+[issues-url]: https://github.com/marev711/macreport/issues
+[license-shield]: https://img.shields.io/github/license/marev711/macreport.svg?style=for-the-badge
+[license-url]: https://github.com/marev711/macreport/blob/master/LICENSE.txt
 [pushover-url]: https://pushover.net
 [gunicorn3-url]: https://docs.gunicorn.org/en/stable/index.html
 [flask-url]: https://palletsprojects.com/p/flask/
